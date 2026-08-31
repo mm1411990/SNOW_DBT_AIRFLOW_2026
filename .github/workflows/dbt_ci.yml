@@ -63,10 +63,12 @@ jobs:
         run: dbt deps
 
       - name: Download Production Manifest (for Slim CI)
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         with:
+          workflow: dbt_prod_cd.yml
           name: prod-manifest
           path: ./state
+          search_artifacts: true
         continue-on-error: true
 
       - name: Build & Test Models in DEV_DB

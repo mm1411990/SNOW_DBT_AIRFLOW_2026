@@ -1,3 +1,4 @@
+-- Testing Slim CI build trigger
 select distinct
     md5(patient_id) as patient_sk,
     patient_id
