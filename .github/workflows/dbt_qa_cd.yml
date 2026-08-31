@@ -5,6 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: 'Force full refresh in QA?'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   deploy_qa:
@@ -56,4 +62,11 @@ jobs:
         run: dbt deps
 
       - name: Deploy & Build Models in QA_DB
-        run: dbt build --target qa
+        run: |
+          if [ "${{ github.event.inputs.full_refresh }}" = "true" ]; then
+            echo "Running full refresh deployment in QA_DB..."
+            dbt build --target qa --full-refresh
+          else
+            echo "Running incremental deployment in QA_DB..."
+            dbt build --target qa
+          fi
