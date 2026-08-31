@@ -2,7 +2,8 @@ name: dbt Production Release Deployment
 
 on:
   release:
-    types: [published] # Triggers when a official release tag is created in GitHub
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   deploy_prod:
@@ -18,8 +19,11 @@ jobs:
       DBT_SNOWFLAKE_SCHEMA: PUBLIC
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -28,7 +32,7 @@ jobs:
           pip install --upgrade pip
           pip install dbt-snowflake
 
-      - name: Create dbt profiles.yml
+      - name: Create dbt profiles directory and file
         run: |
           mkdir -p ~/.dbt
           cat <<EOF > ~/.dbt/profiles.yml
@@ -52,3 +56,10 @@ jobs:
 
       - name: Deploy to PROD_DB
         run: dbt build --target prod
+
+      - name: Upload Production Manifest for Future Slim CI Runs
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-manifest
+          path: target/manifest.json
+          retention-days: 90
