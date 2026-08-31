@@ -2,16 +2,16 @@
 
     {%- set default_schema = target.schema -%}
 
-    {%- if target.name == 'prod' -%}
-        {# In PROD, write directly to custom schemas (e.g., SILVER, GOLD) #}
+    {# 1. In PROD or QA target, use exact custom schema names (e.g., SILVER, GOLD) #}
+    {%- if target.name in ['prod', 'qa'] -%}
         {%- if custom_schema_name is none -%}
             {{ default_schema }}
         {%- else -%}
             {{ custom_schema_name | trim }}
         {%- endif -%}
 
+    {# 2. In DEV or CI target, append custom schema to default schema (e.g., PR_12_CI_SILVER, DEV_MOHIT_GOLD) #}
     {%- else -%}
-        {# In DEV or CI, prefix custom schemas with target schema (e.g., PR_1_CI_SILVER, DEV_MOHIT_SILVER) #}
         {%- if custom_schema_name is none -%}
             {{ default_schema }}
         {%- else -%}
