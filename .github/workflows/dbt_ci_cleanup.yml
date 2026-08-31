@@ -56,6 +56,6 @@ jobs:
 
       - name: Drop PR Schemas from Snowflake
         run: |
-          dbt run-operation drop_schema --args "{schema_name: '${DBT_SNOWFLAKE_SCHEMA}'}" || true
-          dbt run-operation drop_schema --args "{schema_name: '${DBT_SNOWFLAKE_SCHEMA}_SILVER'}" || true
-          dbt run-operation drop_schema --args "{schema_name: '${DBT_SNOWFLAKE_SCHEMA}_GOLD'}" || true
+          dbt run-operation drop_schema_if_exists --args "{schema_to_drop: '${DBT_SNOWFLAKE_SCHEMA}'}" || true
+          dbt run-operation drop_schema_if_exists --args "{schema_to_drop: '${DBT_SNOWFLAKE_SCHEMA}_SILVER'}" || true
+          dbt run-operation drop_schema_if_exists --args "{schema_to_drop: '${DBT_SNOWFLAKE_SCHEMA}_GOLD'}" || true
