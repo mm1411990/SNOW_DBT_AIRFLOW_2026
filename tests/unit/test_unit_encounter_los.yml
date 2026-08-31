@@ -1,0 +1,29 @@
+unit_tests:
+  - name: test_length_of_stay_calculation
+    description: "Validates that length_of_stay_hours correctly computes total hours."
+    model: int_encounters
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('stg_ehr__encounters')
+        rows:
+          - {
+              raw_encounter_id: "ENC101",
+              raw_patient_id: "PAT001",
+              raw_provider_id: "PRV10",
+              encounter_type: "inpatient",
+              admission_time: "2026-08-01 10:00:00",
+              discharge_time: "2026-08-01 22:00:00",
+              total_cost: 500.00,
+              validation_status: "VALID",
+              _ingested_at: "2026-08-01 22:05:00"
+            }
+    expect:
+      rows:
+        - {
+            encounter_id: "ENC101",
+            patient_id: "PAT001",
+            length_of_stay_hours: 12,
+            total_cost: 500.00
+          }

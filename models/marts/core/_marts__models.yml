@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: fct_patient_encounters
+    description: "Gold Fact Table containing patient clinical visits with enforced contracts."
+    config:
+      contract:
+        enforced: true
+      materialized: incremental
+      on_schema_change: fail
+      incremental_strategy: merge
+      unique_key: encounter_sk
+      cluster_by: ["admission_date"]
+
+    columns:
+      - name: encounter_sk
+        data_type: varchar
+        constraints:
+          - type: primary_key
+            warn_unenforced: false
+          - type: not_null
+      - name: encounter_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: patient_sk
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: provider_sk
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: admission_date
+        data_type: date
+        constraints:
+          - type: not_null
+      - name: length_of_stay_hours
+        data_type: number(10,2)
+      - name: total_cost
+        data_type: number(18,2)
+      - name: updated_at
+        data_type: timestamp_ntz
+        constraints:
+          - type: not_null  
+
+  - name: dim_patient
+    description: "Patient Dimension table."
+    config:
+      contract:
+        enforced: true
+      materialized: table
+    columns:
+      - name: patient_sk
+        data_type: varchar
+        constraints:
+          - type: primary_key
+            warn_unenforced: false
+          - type: not_null
+      - name: patient_id
+        data_type: varchar
+        constraints:
+          - type: not_null

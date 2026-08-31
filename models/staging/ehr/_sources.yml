@@ -1,0 +1,8 @@
+version: 2
+sources:
+  - name: ehr_bronze
+    database: HEALTHCARE_PROD_DB
+    schema: BRONZE
+    tables:
+      - name: raw_fhir_encounters
+      - name: raw_claims  
