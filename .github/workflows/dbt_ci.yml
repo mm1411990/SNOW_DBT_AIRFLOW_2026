@@ -58,4 +58,4 @@ jobs:
 
       - name: Run dbt Slim CI (Modified models & downstream state)
         run: |
-          dbt build --target dev
+          dbt build --target dev --full-refresh
