@@ -50,6 +50,10 @@ jobs:
             target: ci
           EOF
 
+      - name: Install dbt packages
+        run: |
+          dbt deps
+
       - name: Drop PR Schemas from Snowflake
         run: |
           dbt run-operation drop_schema --args "{schema_name: '${DBT_SNOWFLAKE_SCHEMA}'}" || true
