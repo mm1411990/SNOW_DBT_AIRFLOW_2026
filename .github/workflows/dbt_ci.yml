@@ -5,6 +5,13 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: 'Force full refresh (build all models)?'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   dbt_ci:
@@ -20,8 +27,11 @@ jobs:
       DBT_SNOWFLAKE_SCHEMA: PR_${{ github.event.number }}_CI
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -30,7 +40,7 @@ jobs:
           pip install --upgrade pip
           pip install dbt-snowflake
 
-      - name: Create dbt profiles.yml
+      - name: Create dbt profiles directory and file
         run: |
           mkdir -p ~/.dbt
           cat <<EOF > ~/.dbt/profiles.yml
@@ -52,5 +62,22 @@ jobs:
       - name: Install dbt packages
         run: dbt deps
 
-      - name: Build & Test in DEV_DB (Ephemeral Schema)
-        run: dbt build --target ci --full-refresh
+      - name: Download Production Manifest (for Slim CI)
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-manifest
+          path: ./state
+        continue-on-error: true
+
+      - name: Build & Test Models in DEV_DB
+        run: |
+          if [ "${{ github.event.inputs.full_refresh }}" = "true" ]; then
+            echo "Manual full refresh requested. Running all models..."
+            dbt build --target ci --full-refresh
+          elif [ -f "./state/manifest.json" ]; then
+            echo "Production manifest found! Running Slim CI (modified models and downstream dependents)..."
+            dbt build --target ci --select state:modified+ --state ./state
+          else
+            echo "No production manifest found. Running full project build..."
+            dbt build --target ci
+          fi
